@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Notifications\contactCreated;
 use Throwable;
+use AWS;
+use Aws\Exception\AwsException;
 
 class ContactController extends Controller
 {
@@ -43,7 +45,22 @@ class ContactController extends Controller
       try {
         $Contact = new Contact();
         $Contact->fill($data)->save();
-        $Contact->notify(new contactCreated($Contact));
+        //NOTE: send SMS linked to a model, this can be useful for sending messages after user creation
+        // $Contact->notify(new contactCreated($Contact));
+
+        //NOTE: send SMS as a step after saving the contact
+        $sms = AWS::createClient('sns');
+
+        $sms->publish([
+          'Message' => 'New contact created: '.$Contact->first_name.' '.$Contact->last_name,
+          'TopicArn' => 'arn:aws:sns:us-east-2:797294200331:Test',
+          'MessageAttributes' => [
+            'AWS.SNS.SMS.SMSType' => [
+              'DataType' => 'String',
+              'StringValue' => 'Promotional'
+            ]
+          ]
+        ]);
 
         return [
           'success' => true,
@@ -55,6 +72,10 @@ class ContactController extends Controller
           'message' =>  'Error'
         ];
       }
+      catch (AwsException $e) {
+        // output error message if fails
+        error_log($e->getMessage());
+      } 
     }
 
     /**
