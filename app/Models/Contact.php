@@ -34,6 +34,8 @@ class Contact extends Model
    */
   public function routeNotificationForSms(?Notification $notication = null)
   {
-    return '+50376351839';
+    return 'arn:aws:sns:us-east-2:797294200331:Test';
+    //NOTE: If we need to send a message to a single phone number, we can use the following:
+    // return '+50376351839';
   }
 }

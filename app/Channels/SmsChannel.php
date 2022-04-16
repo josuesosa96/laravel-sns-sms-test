@@ -26,13 +26,14 @@ class SmsChannel
       return;
     }
 
-    if (!$result = $this->sns->checkIfPhoneNumberIsOptedOut(['phoneNumber' => $to])) {
-      return;
-    }
+    //NOTE: If we need to send a message to a single phone number, we can use the following:
+    // if (!$result = $this->sns->checkIfPhoneNumberIsOptedOut(['phoneNumber' => $to])) {
+    //   return;
+    // }
 
-    if ($result['isOptedOut']) {
-      return;
-    }
+    // if ($result['isOptedOut']) {
+    //   return;
+    // }
 
     $message = $notification->toSms($notifiable);
 
@@ -42,7 +43,9 @@ class SmsChannel
 
     return $this->sns->publish([
       'Message' => $message->content,
-      'PhoneNumber' => $to,
+      //NOTE: If we need to send a message to a single phone number, we can use the following:
+      // 'PhoneNumber' => $to,
+      'TopicArn' => $to,
     ]);
   }
 }
